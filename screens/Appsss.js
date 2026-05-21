@@ -37,16 +37,17 @@ export default function App() {
 
   const toggleTheme = () => setIsDarkMode(!isDarkMode);
 
+  /* -------------------- MODERN PREMIUM COLOR PALETTE -------------------- */
   const theme = {
     dark: isDarkMode,
     colors: {
-      primary: isDarkMode ? '#60a5fa' : '#2563eb',
-      background: isDarkMode ? '#0f172a' : '#f8fafc',
-      card: isDarkMode ? '#1e293b' : '#ffffff',
-      text: isDarkMode ? '#f1f5f9' : '#1e293b',
-      border: isDarkMode ? '#334155' : '#e2e8f0',
+      primary: isDarkMode ? '#fbbf24' : '#ea580c',
+      background: isDarkMode ? '#0b0f19' : '#fcfbf7',
+      card: isDarkMode ? '#111827' : '#ffffff',
+      text: isDarkMode ? '#f3f4f6' : '#111827',
+      border: isDarkMode ? '#1f2937' : '#e5e7eb',
       notification: '#ef4444',
-      secondary: isDarkMode ? '#94a3b8' : '#64748b',
+      secondary: isDarkMode ? '#6b7280' : '#9ca3af',
     }
   };
 
@@ -57,7 +58,7 @@ export default function App() {
       style={[
         styles.switchContainer,
         {
-          backgroundColor: isDarkMode ? '#334155' : '#e2e8f0',
+          backgroundColor: isDarkMode ? '#1f2937' : '#e5e7eb',
           borderColor: theme.colors.border
         }
       ]}
@@ -73,13 +74,12 @@ export default function App() {
         <MaterialCommunityIcons
           name={isDarkMode ? "weather-sunny" : "weather-night"}
           size={14}
-          color={isDarkMode ? "#78350f" : "#1e293b"}
+          color={isDarkMode ? "#451a03" : "#1f2937"}
         />
       </Animated.View>
     </TouchableOpacity>
   );
 
-  // Ortak Stack yapısı: Hem Tarifler hem de Favoriler bu detay sayfasını görebilmeli
   function TariflerStack() {
     return (
       <Stack.Navigator
@@ -124,15 +124,33 @@ export default function App() {
         }}
       >
         <Stack.Screen name="FavorilerListesi" options={{ title: 'Favorilerim' }}>
-          {(props) => (
-            <Favoriler
-              {...props}
-              route={{ ...props.route, params: { favoriIdler: favoriIdler } }}
-              toggleFavori={toggleFavori}
-              isDarkMode={isDarkMode}
-              theme={theme}
-            />
-          )}
+          {(props) => {
+            // EĞER FAVORİLER BOŞSA MODERN EMPTY STATE GÖSTERİLİR, HİÇBİR DOSYAYA DOKUNULMAZ
+            if (favoriIdler.length === 0) {
+              return (
+                <View style={[styles.emptyContainer, { backgroundColor: theme.colors.background }]}>
+                  <View style={[styles.iconCircle, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+                    <MaterialCommunityIcons name="heart-broken" size={46} color={theme.colors.secondary} />
+                  </View>
+                  <Text style={[styles.emptyTitle, { color: theme.colors.text }]}>Henüz favoriniz yok</Text>
+                  <Text style={[styles.emptySubtitle, { color: theme.colors.secondary }]}>
+                    Beğendiğiniz tarifleri kalp butonuna basarak buraya ekleyebilirsiniz.
+                  </Text>
+                </View>
+              );
+            }
+
+            // Orijinal Favoriler çağrın ve props akışın tamamen korundu
+            return (
+              <Favoriler
+                {...props}
+                route={{ ...props.route, params: { favoriIdler: favoriIdler } }}
+                toggleFavori={toggleFavori}
+                isDarkMode={isDarkMode}
+                theme={theme}
+              />
+            );
+          }}
         </Stack.Screen>
         <Stack.Screen
           name="TarifDetay"
@@ -159,7 +177,7 @@ export default function App() {
             paddingBottom: 10,
             paddingTop: 5,
           },
-          tabBarLabelStyle: { fontSize: 12, fontWeight: '600' }
+          tabBarLabelStyle: { fontSize: 12, fontWeight: '700' }
         }}
       >
         <Tab.Screen
@@ -175,9 +193,13 @@ export default function App() {
           name="Favoriler"
           component={FavorilerStack}
           options={{
-            tabBarBadge: favoriIdler.length > 0 ? favoriIdler.length : null,
+            tabBarBadge: favoriIdler.length > 0 ? favoriIdler.length : undefined,
             tabBarIcon: ({ color, focused }) => (
-              <MaterialCommunityIcons name={focused ? "heart" : "heart-outline"} color={color} size={22} />
+              <MaterialCommunityIcons 
+                name={focused ? "heart" : "heart-outline"} 
+                color={focused ? theme.colors.notification : color} 
+                size={22} 
+              />
             ),
           }}
         />
@@ -212,5 +234,42 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 4,
-  }
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 3,
+  },
+  /* --- PREMIUM EMPTY STATE STYLES --- */
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 40,
+  },
+  iconCircle: {
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    borderWidth: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  emptyTitle: {
+    fontSize: 21,
+    fontWeight: '800',
+    letterSpacing: -0.5,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  emptySubtitle: {
+    fontSize: 14,
+    lineHeight: 20,
+    textAlign: 'center',
+    fontWeight: '400',
+  },
 });
